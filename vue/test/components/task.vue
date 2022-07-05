@@ -14,17 +14,23 @@
       <v-col>
         <p>
           {{
-            ` ${this.assigned[0] && this.assigned[0].user} + ${
-              this.assigned.length - 1
-            } others`
+            this.assigned && this.assigned[0]
+              ? ` ${this.assigned[0] && this.assigned[0].user} + ${
+                  this.assigned.length - 1
+                } others`
+              : `No Assignee`
           }}
         </p>
       </v-col>
       <v-col>
-        <p>{{ task.priority }}</p>
+        <p :class="priority">
+          {{ task.priority }}
+        </p>
       </v-col>
       <v-col>
-        <p>{{ task.severity }}</p>
+        <p :class="severity">
+          {{ task.severity }}
+        </p>
       </v-col>
       <v-col>
         <p>{{ task.type }}</p>
@@ -68,11 +74,14 @@ export default {
       toggle: false,
       assigned: [],
       model: 1,
+      priority: this.task.priority,
+      severity: this.task.severity,
     }
   },
   methods: {
     onDelete(id) {
       this.$store.commit('deleteTask', id)
+      this.$emit('getTasks')
     },
     onCheck(id) {
       this.$store.commit('checkTask', id)
@@ -88,11 +97,25 @@ export default {
       console.log(error)
     }
   },
+  watch: {
+    task(newVal, old) {
+      this.assigned = this.task.newFriends
+    },
+  },
 }
 </script>
 
 <style scoped>
 .taskChecked {
   background: gray;
+}
+.Low {
+  background: yellow;
+}
+.Meduim {
+  background: orange;
+}
+.High {
+  background: red;
 }
 </style>

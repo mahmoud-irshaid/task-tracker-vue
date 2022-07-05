@@ -64,6 +64,7 @@
                 <template v-slot:selection="data">
                   <v-chip
                     v-bind="data.attrs"
+                    v-if="NewTask.friends.indexOf(data.item.name) < 2"
                     :input-value="data.selected"
                     close
                     @click="data.select"
@@ -71,6 +72,12 @@
                   >
                     {{ data.item.name }}
                   </v-chip>
+                  <span
+                    v-if="NewTask.friends.indexOf(data.item.name) === 2"
+                    class="black--text text-caption"
+                  >
+                    (+{{ NewTask.friends.length - 2 }} others)
+                  </span>
                 </template>
                 <template v-slot:item="data">
                   <template v-if="typeof data.item !== 'object'">
@@ -161,6 +168,8 @@
                       <v-time-picker
                         v-if="menu2"
                         v-model="NewTask.dueTime"
+                        format="24hr"
+                        :allowed-hours="allowedHours"
                         full-width
                         @click:minute="$refs.menu.save(time)"
                       ></v-time-picker>
@@ -191,12 +200,17 @@
                       v-on="on"
                     ></v-combobox>
                   </template>
-                  <v-date-picker v-model="NewTask.dueDate" no-title scrollable>
+                  <v-date-picker
+                    v-model="NewTask.dueDate"
+                    :allowed-dates="allowedDates"
+                    no-title
+                    scrollable
+                  >
                     <v-spacer></v-spacer>
                     <v-btn text color="primary" @click="menu = false">
                       Cancel
                     </v-btn>
-                    <v-btn text color="primary" @click="$refs.menu.save(dates)">
+                    <v-btn text color="primary" @click="menu = false">
                       OK
                     </v-btn>
                   </v-date-picker>
@@ -231,6 +245,8 @@
                     <v-time-picker
                       v-if="menu3"
                       v-model="NewTask.estTime"
+                      format="24hr"
+                      :allowed-hours="allowedHours"
                       full-width
                       @click:minute="$refs.menu.save(time)"
                     ></v-time-picker>
@@ -246,9 +262,9 @@
               class="my-6"
             ></v-text-field>
 
-            <vcontainer class="d-flex justify-end">
+            <v-container class="d-flex justify-end">
               <v-btn type="submit" elevation="2" class="green"> Submit </v-btn>
-            </vcontainer>
+            </v-container>
           </v-col>
         </v-row>
       </v-form>
@@ -310,6 +326,17 @@ export default {
     remove(item) {
       const index = this.NewTask.friends.indexOf(item.name)
       if (index >= 0) this.NewTask.friends.splice(index, 1)
+    },
+    allowedDates(val) {
+      return (
+        (parseInt(val.split('-')[0], 10) >= new Date().getFullYear() &&
+          parseInt(val.split('-')[1], 10) > new Date().getMonth() + 1) ||
+        (parseInt(val.split('-')[2], 10) >= new Date().getDate() &&
+          parseInt(val.split('-')[1], 10) == new Date().getMonth() + 1)
+      )
+    },
+    allowedHours(v) {
+      return v >= new Date().getHours()
     },
   },
 

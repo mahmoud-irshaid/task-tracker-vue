@@ -2,11 +2,16 @@ const { sequelize } = require("../models/index");
 const uuid = require("uuid");
 
 async function getAllTasks(req, res) {
+  let offset = req.params.page;
+  console.log(offset);
   try {
-    const tasks = await sequelize.models.Tasks.findAll({
+    const tasks = await sequelize.models.Tasks.findAndCountAll({
+      offset: (offset - 1) * 5,
+      limit: 5,
       where: { recordStatus: "latest" },
+      order: [["_id", "ASC"]],
     });
-    res.send(tasks);
+    res.send({ tasks });
   } catch (error) {
     res.send(error.message);
   }
@@ -83,6 +88,7 @@ async function checkTask(req, res) {
 async function editTask(req, res) {
   let data = req.body.payload.EditTask;
   let friends = req.body.payload.friends;
+  let newFriends = [];
   try {
     const tasks = await sequelize.models.Tasks.update(
       {
@@ -111,23 +117,26 @@ async function editTask(req, res) {
       recordStatus: "latest",
     });
     for (let i = 0; i < friends.length; i++) {
-      await sequelize.models.Assigneds.update(
-        {
-          recordStatus: "updated",
-        },
-        {
-          where: { task: data._id },
-        }
-      );
+      if (friends[i]._id) {
+        await sequelize.models.Assigneds.update(
+          {
+            recordStatus: "updated",
+          },
+          {
+            where: { _id: friends[i]._id, task: data._id },
+          }
+        );
+      }
 
-      await sequelize.models.Assigneds.create({
+      let newAssigned = await sequelize.models.Assigneds.create({
         _id: friends[i]._id || uuid.v4(),
         user: friends[i].user,
         task: data._id,
         recordStatus: "latest",
       });
+      newFriends.push(newAssigned);
     }
-    res.send(newTask);
+    res.send({ newTask, newFriends });
   } catch (error) {
     res.send(error.message);
   }

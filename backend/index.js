@@ -14,7 +14,7 @@ app.use(cors());
 sequelize.sync();
 
 app.get("/", getHomePage);
-app.get("/tasks", useRouter);
+app.get("/tasks/:page", useRouter);
 app.post("/newTask", useRouter);
 app.put("/deleteTask/:id", useRouter);
 app.put("/checkTask/:id", useRouter);

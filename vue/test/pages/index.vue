@@ -46,7 +46,14 @@
         </v-col>
       </v-row>
     </v-card>
-    <Tasks />
+    <Tasks @getTasks="getTasks" />
+
+    <template>
+      <div class="text-center my-6">
+        <v-pagination v-model="page" :length="totalPages"></v-pagination>
+      </div>
+    </template>
+
     <!-- 
     <NuxtLink to="/about"> to About </NuxtLink>
     <button @click="toContact">to contact</button> -->
@@ -67,9 +74,23 @@ export default {
   data() {
     return {
       toggle: false,
+      page: 1,
+      totalPages: 1,
+      tasks: this.$store.state.task,
     }
   },
   methods: {
+    async getTasks() {
+      try {
+        const result = await axios.get(
+          `http://localhost:4444/tasks/${this.page}`
+        )
+        this.$store.commit('setTasks', result.data.tasks.rows)
+        this.totalPages = Math.ceil(result.data.tasks.count / 5)
+      } catch (error) {
+        console.log(error)
+      }
+    },
     // deleteTask(id) {
     //   this.tasks = this.tasks.filter((task) => task.id !== id)
     // },
@@ -92,13 +113,16 @@ export default {
       this.$router.push({ path: `/artical/${5}` })
     },
   },
-  async mounted() {
-    try {
-      const tasks = await axios.get('http://localhost:4444/tasks')
-      this.$store.commit('setTasks', tasks.data)
-    } catch (error) {
-      console.log(error)
-    }
+  mounted() {
+    this.getTasks()
+  },
+  updated() {
+    this.getTasks()
+  },
+  watch: {
+    page(newVal, old) {
+      this.getTasks()
+    },
   },
 }
 </script>

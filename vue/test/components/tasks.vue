@@ -1,7 +1,7 @@
 <template>
   <div>
     <div :key="task.id" v-for="task in tasks">
-      <Task :task="task" />
+      <Task :task="task" @getTasks="getTasks" />
     </div>
   </div>
 </template>
@@ -15,7 +15,11 @@ export default {
     Task,
   },
   props: {},
-  methods: {},
+  methods: {
+    getTasks() {
+      this.$emit('getTasks')
+    },
+  },
   computed: {
     tasks() {
       return this.$store.getters.getTasks

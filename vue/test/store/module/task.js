@@ -62,10 +62,12 @@ const task = {
         let updateTask = await axios.put(`http://localhost:4444/editTask`, {
           payload,
         })
-        if (updateTask)
+        if (updateTask) {
+          updateTask.data.newTask.newFriends = updateTask.data.newFriends
           return (state.tasks = state.tasks.map((task) =>
-            task._id === payload._id ? updateTask.data : task
+            task._id === payload.EditTask._id ? updateTask.data.newTask : task
           ))
+        }
       } catch (error) {
         console.log(error)
       }

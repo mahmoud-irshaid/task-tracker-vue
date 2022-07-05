@@ -62,12 +62,19 @@
                 <template v-slot:selection="data">
                   <v-chip
                     v-bind="data.attrs"
+                    v-if="friends.indexOf(data.item) < 2"
                     :input-value="data.selected"
                     close
                     @click:close="remove(data.item)"
                   >
                     {{ data.item.user }}
                   </v-chip>
+                  <span
+                    v-if="friends.indexOf(data.item) === 2"
+                    class="black--text text-caption"
+                  >
+                    (+{{ friends.length - 2 }} others)
+                  </span>
                 </template>
                 <template v-slot:item="data">
                   <template v-if="typeof data.item !== 'object'">
@@ -157,6 +164,8 @@
                       <v-time-picker
                         v-if="menu2"
                         v-model="EditTask.dueTime"
+                        format="24hr"
+                        :allowed-hours="allowedHours"
                         full-width
                         @click:minute="$refs.menu.save(time)"
                       ></v-time-picker>
@@ -187,12 +196,17 @@
                       v-on="on"
                     ></v-combobox>
                   </template>
-                  <v-date-picker v-model="EditTask.dueDate" no-title scrollable>
+                  <v-date-picker
+                    v-model="EditTask.dueDate"
+                    :allowed-dates="allowedDates"
+                    no-title
+                    scrollable
+                  >
                     <v-spacer></v-spacer>
                     <v-btn text color="primary" @click="menu = false">
                       Cancel
                     </v-btn>
-                    <v-btn text color="primary" @click="$refs.menu.save(dates)">
+                    <v-btn text color="primary" @click="menu = false">
                       OK
                     </v-btn>
                   </v-date-picker>
@@ -227,6 +241,8 @@
                     <v-time-picker
                       v-if="menu3"
                       v-model="EditTask.estTime"
+                      format="24hr"
+                      :allowed-hours="allowedHours"
                       full-width
                       @click:minute="$refs.menu.save(time)"
                     ></v-time-picker>
@@ -242,9 +258,9 @@
               class="my-6"
             ></v-text-field>
 
-            <vcontainer class="d-flex justify-end">
+            <v-container class="d-flex justify-end">
               <v-btn type="submit" elevation="2" class="green"> Submit </v-btn>
-            </vcontainer>
+            </v-container>
           </v-col>
         </v-row>
       </v-form>
@@ -311,15 +327,25 @@ export default {
       this.$emit('close')
     },
     remove(item) {
-      this.friends = this.friends.filter((i) => i.user !== item.name)
-      // const index = this.oldpeople.indexOf(item.name)
-      //if (index >= 0) this.oldpeople.splice(index, 1)
+      const index = this.friends.indexOf(item)
+      if (index >= 0) this.friends.splice(index, 1)
     },
     addNewAssignee() {
       this.friends = [
         ...this.friends,
         //this.oldpeople[this.oldpeople.length - 1],
       ]
+    },
+    allowedDates(val) {
+      return (
+        (parseInt(val.split('-')[0], 10) >= new Date().getFullYear() &&
+          parseInt(val.split('-')[1], 10) > new Date().getMonth() + 1) ||
+        (parseInt(val.split('-')[2], 10) >= new Date().getDate() &&
+          parseInt(val.split('-')[1], 10) == new Date().getMonth() + 1)
+      )
+    },
+    allowedHours(v) {
+      return v >= new Date().getHours()
     },
   },
 

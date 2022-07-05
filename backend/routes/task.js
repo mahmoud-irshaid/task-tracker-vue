@@ -8,7 +8,7 @@ const {
   getAllAssigned,
 } = require("../controller/task");
 
-router.get("/tasks", getAllTasks);
+router.get("/tasks/:page", getAllTasks);
 router.post("/newTask", createNewTask);
 router.put("/deleteTask/:id", deleteTask);
 router.put("/checkTask/:id", checkTask);
